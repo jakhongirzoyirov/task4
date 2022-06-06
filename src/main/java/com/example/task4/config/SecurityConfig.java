@@ -1,22 +1,21 @@
 package com.example.task4.config;
 
-import com.example.task4.listener.logout.CustomLogoutEventHandler;
+import com.example.task4.listener.authentication.CustomAuthenticationSuccessEventHandler;
+import com.example.task4.listener.logout.CustomLogoutSuccessEventHandler;
 import com.example.task4.service.impl.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -29,6 +28,8 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsServiceImpl userDetailsService;
+    private final CustomLogoutSuccessEventHandler logoutSuccessEventHandler;
+    private final CustomAuthenticationSuccessEventHandler authenticationSuccessEventHandler;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -40,13 +41,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and()
                 .formLogin()
+                .successHandler(authenticationSuccessEventHandler)
                 .loginPage("/login-page")
                 .defaultSuccessUrl("/")
                 .permitAll()
 
                 .and()
                 .logout()
-                .logoutSuccessHandler(logoutSuccessHandler())
+                .logoutSuccessHandler(logoutSuccessEventHandler)
                 .permitAll()
 
                 .and()
@@ -65,11 +67,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public AuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-        return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
-    }
-
-    @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
@@ -81,7 +78,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public LogoutSuccessHandler logoutSuccessHandler() {
-        return new CustomLogoutEventHandler();
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
+
+
 }

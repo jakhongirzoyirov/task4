@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @RestController
@@ -18,14 +20,14 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/deleteUsers")
-    public ResponseEntity<?> deleteUsers(@RequestBody List<Long> idList) {
-        userService.deleteAllUsersById(idList);
+    public ResponseEntity<?> deleteUsers(@RequestBody List<Long> idList, HttpServletRequest request) {
+        userService.deleteAllUsersById(idList, request);
         return ResponseEntity.ok(null);
     }
 
     @PostMapping("/blockUsers")
-    public ResponseEntity<?> blockUsers(@RequestBody List<Long> idList) {
-        userService.blockUsers(idList);
+    public ResponseEntity<?> blockUsers(@RequestBody List<Long> idList, HttpServletRequest request) {
+        userService.blockUsers(idList, request);
         return ResponseEntity.ok(null);
     }
 
